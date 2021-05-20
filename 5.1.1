@@ -1,0 +1,13 @@
+#%Module#########################################################                                                                                                                                       
+##
+##              gromacs software modulefile
+##
+proc ModulesHelp { } {
+	puts stderr "This is gromacs software"
+}
+  
+set root "/usr/local/gromacs"
+prepend-path INCLUDE $root/include
+prepend-path LD_LIBRARY_PATH $root/lib
+prepend-path PATH $root/bin 
+

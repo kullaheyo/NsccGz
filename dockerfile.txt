@@ -1,0 +1,53 @@
+FROM eclipse/cpp_gcc:latest
+
+ADD . /home/app
+ADD sources.list /etc/apt
+ENV DEBIAN_FRONTEND=noninteractive
+ 
+# 添加源
+RUN sudo apt-get update
+RUN sudo apt-get install -y --assume-yes apt-transport-https ca-certificates curl software-properties-common
+RUN sudo apt-get install -y --assume-yes apt-utils vim libssl-dev tcl environment-modules
+
+#Openfoam
+WORKDIR $HOME
+RUN sudo apt-get install build-essential flex bison git-core cmake zlib1g-dev libboost-system-dev libboost-thread-dev libopenmpi-dev openmpi-bin gnuplot libreadline-dev libncurses-dev libxt-dev
+RUN sudo apt-get install libqt5x11extras5-dev libxt-dev qt5-default qttools5-dev curl
+RUN sudo git clone https://github.com/OpenFOAM/OpenFOAM-8.git
+RUN sudo git clone https://github.com/OpenFOAM/ThirdParty-8.git
+WORKDIR $HOME/OpenFOAM
+RUN echo "source $HOME/OpenFOAM/OpenFOAM-8/etc/bashrc">>~/.bashrc\
+RUN source $HOME/.bashrc
+WORKDIR $HOME/OpenFOAM/ThirdParty-8
+RUN ./Allwmake
+RUN ./makeParaView
+RUN wmRefresh
+WORKDIR $HOME/OpenFOAM/OpenFOAM-8
+RUN ./Allwmake
+
+
+#SU2
+WORKDIR $HOME
+RUN sudo apt-get update \  
+	&& sudo apt-get install -y build-essential python3 gcc swig python-pip
+RUN sudo pip install mpi4py
+RUN sudo git clone https://github.com/su2code/SU2
+WORKDIR /home/SU2
+RUN sudo ./meson.py build
+RUN sudo ./ninja -C build install
+ENV SU2_RUN=$HOME/SU2
+ENV PATH=$SU2_RUN:$PATH
+ENV PYTHONPATH=$SU2_RUN:$PYTHONPATH
+RUN echo "export SU2_RUN=$HOME/SU2">>~/.bashrc \
+	&& echo "export PATH=$SU2_RUN:$PATH">>~/.bashrc \
+	&& echo "export PYTHONPATH=$SU2_RUN:$PYTHONPATH">>~/.bashrc
+
+
+# CCFDv3.0
+WORKDIR $HOME
+RUN sudo git clone https://github.com/PARALLELCCFD/CCFDV3.0
+
+
+
+
+
